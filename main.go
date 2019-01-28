@@ -9,12 +9,41 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
+// SafeCounter is safe to use concurrently.
+type SafeState struct {
+	stop   bool
+	mux sync.Mutex
+}
+
+// Inc increments the counter for the given key.
+func (c *SafeState) Stop() {
+	c.mux.Lock()
+	// Lock so only one goroutine at a time can access the map c.v.
+	c.stop = true
+	c.mux.Unlock()
+}
+
+// Value returns the current value of the counter for the given key.
+func (c *SafeState) WantStop() bool {
+	c.mux.Lock()
+	// Lock so only one goroutine at a time can access the map c.v.
+	defer c.mux.Unlock()
+	return c.stop
+}
+
+var State SafeState
+
 func main() {
+	launchServer();
+}
+
+func launchServer() {
 	var kubeconfig *string
 	if home := homeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
@@ -46,6 +75,9 @@ func main() {
 
 	}
 	for {
+		if State.WantStop() {
+			return
+		}
 		namespaces, err := clientset.CoreV1().Namespaces().List(metav1.ListOptions{})
 		if err != nil {
 			panic(err.Error())

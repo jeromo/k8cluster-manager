@@ -1,6 +1,7 @@
 module k8cluster-manager
 
 require (
+	github.com/DATA-DOG/godog v0.7.9
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20190121005146-b04fd42d9952 // indirect
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
