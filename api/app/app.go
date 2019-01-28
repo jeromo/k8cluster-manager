@@ -1,36 +1,32 @@
 package app
 
 import (
+	kubernetes2 "k8s.io/client-go/kubernetes"
 	"log"
 	"net/http"
 
 	"k8cluster-manager/api/app/handler"
+	"k8cluster-manager/api/app/k8manager"
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 )
  
 // App has router and db instances
 type App struct {
 	Router *mux.Router
-	DB     *gorm.DB
+	Clientset *kubernetes2.Clientset
 }
  
 // App initialize with predefined configuration
 func (a *App) Initialize() {
 	a.Router = mux.NewRouter()
 	a.setRouters()
+	a.Clientset = k8manager.Initialize()
 }
  
 // Set all required routers
 func (a *App) setRouters() {
 	// Routing for handling the projects
-	a.Get("/employees", a.GetAllEmployees)
-	a.Post("/employees", a.CreateEmployee)
-	a.Get("/employees/{title}", a.GetEmployee)
-	a.Put("/employees/{title}", a.UpdateEmployee)
-	a.Delete("/employees/{title}", a.DeleteEmployee)
-	a.Put("/employees/{title}/disable", a.DisableEmployee)
-	a.Put("/employees/{title}/enable", a.EnableEmployee)
+	a.Get("/namespaces", a.GetNamespaces)
 }
  
 // Wrap the router for GET method
@@ -47,41 +43,17 @@ func (a *App) Post(path string, f func(w http.ResponseWriter, r *http.Request)) 
 func (a *App) Put(path string, f func(w http.ResponseWriter, r *http.Request)) {
 	a.Router.HandleFunc(path, f).Methods("PUT")
 }
- 
+
+func (a *App) GetNamespaces(w http.ResponseWriter, r *http.Request) {
+	handler.GetNamespaces(a.Clientset, w, r)
+}
+
 // Wrap the router for DELETE method
 func (a *App) Delete(path string, f func(w http.ResponseWriter, r *http.Request)) {
 	a.Router.HandleFunc(path, f).Methods("DELETE")
 }
  
-// Handlers to manage Employee Data
-func (a *App) GetAllEmployees(w http.ResponseWriter, r *http.Request) {
-	handler.GetAllEmployees(a.DB, w, r)
-}
- 
-func (a *App) CreateEmployee(w http.ResponseWriter, r *http.Request) {
-	handler.CreateEmployee(a.DB, w, r)
-}
- 
-func (a *App) GetEmployee(w http.ResponseWriter, r *http.Request) {
-	handler.GetEmployee(a.DB, w, r)
-}
- 
-func (a *App) UpdateEmployee(w http.ResponseWriter, r *http.Request) {
-	handler.UpdateEmployee(a.DB, w, r)
-}
- 
-func (a *App) DeleteEmployee(w http.ResponseWriter, r *http.Request) {
-	handler.DeleteEmployee(a.DB, w, r)
-}
- 
-func (a *App) DisableEmployee(w http.ResponseWriter, r *http.Request) {
-	handler.DisableEmployee(a.DB, w, r)
-}
- 
-func (a *App) EnableEmployee(w http.ResponseWriter, r *http.Request) {
-	handler.EnableEmployee(a.DB, w, r)
-}
- 
+
 // Run the app on it's router
 func (a *App) Run(host string) {
 	log.Fatal(http.ListenAndServe(host, a.Router))

@@ -1,16 +1,9 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	"k8cluster-manager/api/app"
 	"os"
-	"path/filepath"
 	"sync"
-	"time"
 	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
@@ -44,6 +37,12 @@ func main() {
 }
 
 func launchServer() {
+	app := &app.App{}
+	app.Initialize()
+	app.Run(":3000")
+}
+
+/*func launchServer() {
 	var kubeconfig *string
 	if home := homeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
@@ -111,6 +110,7 @@ func launchServer() {
 		time.Sleep(10 * time.Second)
 	}
 }
+*/
 
 func homeDir() string {
 	if h := os.Getenv("HOME"); h != "" {
