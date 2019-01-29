@@ -51,6 +51,15 @@ func GetNamespaces( clientset *kubernetes2.Clientset) []string{
 	return salida
 }
 
+func GetNamespace( name string, clientset *kubernetes2.Clientset) string{
+	namespace, err := clientset.CoreV1().Namespaces().Get(name, metav1.GetOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return 	namespace.ObjectMeta.Name
+}
+
 
 func homeDir() string {
 	if h := os.Getenv("HOME"); h != "" {

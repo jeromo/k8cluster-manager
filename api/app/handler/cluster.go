@@ -9,8 +9,9 @@ import (
 func GetNamespaces(clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
 	salida := k8manager.GetNamespaces(clientset)
 	respondJSON(w, http.StatusOK, salida)
-/*	employees := []model.Employee{}
-	db.Find(&employees)
-	respondJSON(w, http.StatusOK, employees)
-*/}
- 
+}
+
+func GetNamespace(name string, clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
+	salida := k8manager.GetNamespace(name, clientset)
+	respondJSON(w, http.StatusOK, salida)
+}

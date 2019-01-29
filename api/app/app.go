@@ -27,6 +27,7 @@ func (a *App) Initialize() {
 func (a *App) setRouters() {
 	// Routing for handling the projects
 	a.Get("/namespaces", a.GetNamespaces)
+	a.Get("/namespaces/{name}", a.GetNamespace)
 }
  
 // Wrap the router for GET method
@@ -46,6 +47,12 @@ func (a *App) Put(path string, f func(w http.ResponseWriter, r *http.Request)) {
 
 func (a *App) GetNamespaces(w http.ResponseWriter, r *http.Request) {
 	handler.GetNamespaces(a.Clientset, w, r)
+}
+
+func (a *App) GetNamespace(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	name := vars["name"]
+	handler.GetNamespace(name, a.Clientset, w, r)
 }
 
 // Wrap the router for DELETE method
