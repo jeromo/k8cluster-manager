@@ -42,3 +42,13 @@ func GetDeployments(namespace string, clientset *kubernetes2.Clientset, w http.R
 }
 
 
+func CreateDemoDeployment(namespace string, clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
+	output := k8manager.CreateDemoDeployment(namespace, clientset)
+	if strings.Compare(output,"Error") == 0 {
+		respondJSON(w, http.StatusInternalServerError, namespace)
+	} else {
+		respondJSON(w, http.StatusAccepted, output)
+	}
+}
+
+

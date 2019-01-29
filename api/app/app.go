@@ -29,7 +29,8 @@ func (a *App) setRouters() {
 	a.Get("/namespaces", a.GetNamespaces)
 	a.Get("/namespaces/{name}", a.GetNamespace)
 	a.Get("/pods/{namespace}", a.GetPods)
-	a.Get("/deployments/{namespace}", a.GetPods)
+	a.Get("/deployments/{namespace}", a.GetDeployments)
+	a.Post("/deployments/{namespace}", a.CreateDemoDeployment)
 }
  
 // Wrap the router for GET method
@@ -67,6 +68,12 @@ func (a *App) GetDeployments(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	namespace := vars["namespace"]
 	handler.GetPods(namespace, a.Clientset, w, r)
+}
+
+func (a *App) CreateDemoDeployment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	namespace := vars["namespace"]
+	handler.CreateDemoDeployment(namespace, a.Clientset, w, r)
 }
 
 // Wrap the router for DELETE method

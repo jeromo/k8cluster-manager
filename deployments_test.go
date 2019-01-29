@@ -6,6 +6,7 @@ import (
 	"github.com/DATA-DOG/godog/gherkin"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 )
 
@@ -43,9 +44,29 @@ func iGetAllTheDeploymentsOfTheNamespace() error {
 	}
 	return nil
 }
+func iCreateDemoDeployment() error {
+	response, err := http.PostForm("http://localhost:3000/deployments/default", url.Values{})
+
+	defer response.Body.Close()
+	response_contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Printf("%s", err)
+		os.Exit(1)
+	}
+	contents = string(response_contents)
+
+	return err
+}
+
+func iGetItCreated() error {
+	return godog.ErrPending
+}
+
 
 func FeatureDeploymentsContext(s *godog.Suite) {
 	s.Step(`^I ask for deployments in <namespace>$`, iAskForDeploymentsInNamespace)
 	s.Step(`^I get all the deployments of the namespace$`, iGetAllTheDeploymentsOfTheNamespace)
+	s.Step(`^I create  demo deployment$`, iCreateDemoDeployment)
+	s.Step(`^I get it created$`, iGetItCreated)
 }
 

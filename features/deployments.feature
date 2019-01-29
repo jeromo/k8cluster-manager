@@ -11,3 +11,8 @@ Feature: Deployments
       | kubesystem |
       | pepito     |
     Then I get all the deployments of the namespace
+
+  Scenario: Create demo deployment
+    Given the ws server is healthy running
+    When I create  demo deployment
+    Then I get it created
