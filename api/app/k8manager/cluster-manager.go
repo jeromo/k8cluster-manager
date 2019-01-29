@@ -42,13 +42,13 @@ func GetNamespaces( clientset *kubernetes2.Clientset) []string{
 	}
 	fmt.Printf("There are %d namespacess in the cluster\n", len(namespaces.Items))
 
-	var salida []string
+	var output []string
 	for i :=0; i < len(namespaces.Items); i++ {
-		salida = append(salida, namespaces.Items[i].ObjectMeta.Name)
+		output = append(output, namespaces.Items[i].ObjectMeta.Name)
 	}
 
 
-	return salida
+	return output
 }
 
 func GetNamespace( name string, clientset *kubernetes2.Clientset) string{
@@ -60,6 +60,18 @@ func GetNamespace( name string, clientset *kubernetes2.Clientset) string{
 	return 	namespace.ObjectMeta.Name
 }
 
+func GetPods( namespace string, clientset *kubernetes2.Clientset) []string {
+	pods, err := clientset.CoreV1().Pods(namespace).List(metav1.ListOptions{})
+	if err != nil {
+		return nil
+	}
+	var output []string
+	for i :=0; i < len(pods.Items); i++ {
+		output = append(output, pods.Items[i].ObjectMeta.Name)
+	}
+
+	return output
+}
 
 func homeDir() string {
 	if h := os.Getenv("HOME"); h != "" {

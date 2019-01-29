@@ -20,3 +20,15 @@ func GetNamespace(name string, clientset *kubernetes2.Clientset, w http.Response
 		respondJSON(w, http.StatusOK, output)
 	}
 }
+
+
+func GetPods(namespace string, clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
+	output := k8manager.GetPods(namespace, clientset)
+	if output ==nil {
+		respondJSON(w, http.StatusNotFound, namespace)
+	} else {
+		respondJSON(w, http.StatusOK, output)
+	}
+}
+
+
