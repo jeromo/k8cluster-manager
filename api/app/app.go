@@ -29,6 +29,7 @@ func (a *App) setRouters() {
 	a.Get("/namespaces", a.GetNamespaces)
 	a.Get("/namespaces/{name}", a.GetNamespace)
 	a.Get("/pods/{namespace}", a.GetPods)
+	a.Get("/deployments/{namespace}", a.GetPods)
 }
  
 // Wrap the router for GET method
@@ -57,6 +58,12 @@ func (a *App) GetNamespace(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) GetPods(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	namespace := vars["namespace"]
+	handler.GetPods(namespace, a.Clientset, w, r)
+}
+
+func (a *App) GetDeployments(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	namespace := vars["namespace"]
 	handler.GetPods(namespace, a.Clientset, w, r)
