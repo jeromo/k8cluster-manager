@@ -31,6 +31,7 @@ func (a *App) setRouters() {
 	a.Get("/pods/{namespace}", a.GetPods)
 	a.Get("/deployments/{namespace}", a.GetDeployments)
 	a.Post("/deployments/{namespace}", a.CreateDemoDeployment)
+	a.Delete("/deployments/{namespace}", a.DeleteDemoDeployment)
 }
  
 // Wrap the router for GET method
@@ -67,7 +68,7 @@ func (a *App) GetPods(w http.ResponseWriter, r *http.Request) {
 func (a *App) GetDeployments(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	namespace := vars["namespace"]
-	handler.GetPods(namespace, a.Clientset, w, r)
+	handler.GetDeployments(namespace, a.Clientset, w, r)
 }
 
 func (a *App) CreateDemoDeployment(w http.ResponseWriter, r *http.Request) {
@@ -76,6 +77,11 @@ func (a *App) CreateDemoDeployment(w http.ResponseWriter, r *http.Request) {
 	handler.CreateDemoDeployment(namespace, a.Clientset, w, r)
 }
 
+func (a *App) DeleteDemoDeployment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	namespace := vars["namespace"]
+	handler.DeleteDemoDeployment(namespace, a.Clientset, w, r)
+}
 // Wrap the router for DELETE method
 func (a *App) Delete(path string, f func(w http.ResponseWriter, r *http.Request)) {
 	a.Router.HandleFunc(path, f).Methods("DELETE")

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetes2 "k8s.io/client-go/kubernetes"
 )
@@ -66,10 +67,25 @@ func CreateDemoDeployment( namespace string, clientset *kubernetes2.Clientset) s
 	// Create Deployment
 	result, err := deploymentsClient.Create(deployment)
 	if err != nil {
-		panic(err)
+		return "Error"
 
 	}
 	return result.GetObjectMeta().GetName()
 }
 
 func int32Ptr(i int32) *int32 { return &i }
+
+func DeleteDemoDeployment( namespace string, clientset *kubernetes2.Clientset) string {
+	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+	deletePolicy := metav1.DeletePropagationForeground
+	err := deploymentsClient.Delete("demo-deployment", &metav1.DeleteOptions{PropagationPolicy: &deletePolicy,})
+	if err != nil && !errors.IsNotFound(err){
+		panic(err)
+	}
+	if errors.IsNotFound(err) {
+
+		return "NotFound"
+	}
+
+	return "Deleted"
+}

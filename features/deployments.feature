@@ -16,3 +16,8 @@ Feature: Deployments
     Given the ws server is healthy running
     When I create  demo deployment
     Then I get it created
+
+  Scenario: Delete demo deployment
+    Given the ws server is healthy running
+    When I delete  demo deployment
+    Then I get it deleted if exists
