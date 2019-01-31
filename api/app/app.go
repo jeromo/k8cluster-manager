@@ -1,13 +1,15 @@
 package app
 
 import (
+	"fmt"
+	"io/ioutil"
 	kubernetes2 "k8s.io/client-go/kubernetes"
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"k8cluster-manager/api/app/handler"
 	"k8cluster-manager/api/app/k8manager"
-	"github.com/gorilla/mux"
 )
  
 // App has router and db instances
@@ -30,7 +32,8 @@ func (a *App) setRouters() {
 	a.Get("/namespaces/{name}", a.GetNamespace)
 	a.Get("/pods/{namespace}", a.GetPods)
 	a.Get("/deployments/{namespace}", a.GetDeployments)
-	a.Post("/deployments/{namespace}", a.CreateDemoDeployment)
+	a.Post("/createdemodeployment/{namespace}", a.CreateDemoDeployment)
+	a.Post("/deployments/{namespace}", a.CreateDeployment)
 	a.Delete("/deployments/{namespace}", a.DeleteDemoDeployment)
 }
  
@@ -75,6 +78,30 @@ func (a *App) CreateDemoDeployment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	namespace := vars["namespace"]
 	handler.CreateDemoDeployment(namespace, a.Clientset, w, r)
+}
+
+func (a *App) CreateDeployment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	namespace := vars["namespace"]
+
+	file, _, err := r.FormFile("uploadfile")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+
+
+	body, err := ioutil.ReadAll(file)
+
+	if err != nil {
+		log.Printf("Error reading body: %v", err)
+		http.Error(w, "can't read body", http.StatusBadRequest)
+		return
+	}
+
+	handler.CreateDeploymentByYaml(namespace, body, a.Clientset, w, r)
+
 }
 
 func (a *App) DeleteDemoDeployment(w http.ResponseWriter, r *http.Request) {

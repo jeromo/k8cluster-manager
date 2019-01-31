@@ -7,6 +7,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetes2 "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
+	"log"
 )
 
 func GetDeployments( namespace string, clientset *kubernetes2.Clientset) []string {
@@ -88,4 +90,30 @@ func DeleteDemoDeployment( namespace string, clientset *kubernetes2.Clientset) s
 	}
 
 	return "Deleted"
+}
+
+func CreateDeploymentByYaml( namespace string, configFile []byte, clientset *kubernetes2.Clientset) string {
+	//var deployment appsv1.Deployment
+
+	decode := scheme.Codecs.UniversalDeserializer().Decode
+	obj, _, err := decode([]byte(configFile), nil, nil)
+
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error while decoding YAML object. Err was: %s", err))
+	}
+
+	// Create Deployment
+	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+	switch o := obj.(type) {
+	case *appsv1.Deployment:
+		result, err := deploymentsClient.Create(o)
+		return result.GetObjectMeta().GetName()
+		if err != nil {
+			return "Error"
+
+		}
+	default:
+		//o is unknown for us
+	}
+	return "Error"
 }

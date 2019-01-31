@@ -21,3 +21,11 @@ Feature: Deployments
     Given the ws server is healthy running
     When I delete  demo deployment
     Then I get it deleted if exists
+
+  Scenario: Create deployment by file
+    Given the ws server is healthy running
+    When I create deployment by <description>
+      | description           |
+      | nginx-deployment.yaml |
+    Then I get the deployments created
+

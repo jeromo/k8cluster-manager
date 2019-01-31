@@ -51,6 +51,14 @@ func CreateDemoDeployment(namespace string, clientset *kubernetes2.Clientset, w 
 	}
 }
 
+func CreateDeploymentByYaml(namespace string, configFile []byte,clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
+	output := k8manager.CreateDeploymentByYaml(namespace, configFile, clientset)
+	if strings.Compare(output,"Error") == 0 {
+		respondJSON(w, http.StatusInternalServerError, namespace)
+	} else {
+		respondJSON(w, http.StatusAccepted, output)
+	}
+}
 
 func DeleteDemoDeployment(namespace string, clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
 	output := k8manager.DeleteDemoDeployment(namespace, clientset)
