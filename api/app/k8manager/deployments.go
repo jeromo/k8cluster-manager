@@ -8,7 +8,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetes2 "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
-	"log"
 )
 
 func GetDeployments( namespace string, clientset *kubernetes2.Clientset) []string {
@@ -99,7 +98,7 @@ func CreateDeploymentByYaml( namespace string, configFile []byte, clientset *kub
 	obj, _, err := decode([]byte(configFile), nil, nil)
 
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Error while decoding YAML object. Err was: %s", err))
+		return "Error"
 	}
 
 	// Create Deployment
@@ -109,8 +108,8 @@ func CreateDeploymentByYaml( namespace string, configFile []byte, clientset *kub
 		result, err := deploymentsClient.Create(o)
 		return result.GetObjectMeta().GetName()
 		if err != nil {
-			return "Error"
 
+			return "Error"
 		}
 	default:
 		//o is unknown for us

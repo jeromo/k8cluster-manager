@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"github.com/gorilla/mux"
+	"io/ioutil"
 	"k8cluster-manager/api/app/k8manager"
 	kubernetes2 "k8s.io/client-go/kubernetes"
 	"net/http"
@@ -42,7 +44,10 @@ func GetDeployments(namespace string, clientset *kubernetes2.Clientset, w http.R
 }
 
 
-func CreateDemoDeployment(namespace string, clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
+func CreateDemoDeployment(clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	namespace := vars["namespace"]
+
 	output := k8manager.CreateDemoDeployment(namespace, clientset)
 	if strings.Compare(output,"Error") == 0 {
 		respondJSON(w, http.StatusInternalServerError, namespace)
@@ -51,8 +56,27 @@ func CreateDemoDeployment(namespace string, clientset *kubernetes2.Clientset, w 
 	}
 }
 
-func CreateDeploymentByYaml(namespace string, configFile []byte,clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
-	output := k8manager.CreateDeploymentByYaml(namespace, configFile, clientset)
+func CreateDeploymentByYaml(clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	namespace := vars["namespace"]
+
+	file, _, err := r.FormFile("uploadfile")
+	if err != nil {
+		respondJSON(w, http.StatusNotAcceptable, namespace)
+
+		return
+	}
+	defer file.Close()
+
+	body, err := ioutil.ReadAll(file)
+
+	if err != nil {
+		respondJSON(w, http.StatusBadRequest, namespace)
+
+		return
+	}
+
+	output := k8manager.CreateDeploymentByYaml(namespace, body, clientset)
 	if strings.Compare(output,"Error") == 0 {
 		respondJSON(w, http.StatusInternalServerError, namespace)
 	} else {

@@ -25,7 +25,6 @@ Feature: Deployments
   Scenario: Create deployment by file
     Given the ws server is healthy running
     When I create deployment by <description>
-      | description           |
       | nginx-deployment.yaml |
-    Then I get the deployments created
+    Then I get the deployment created
 

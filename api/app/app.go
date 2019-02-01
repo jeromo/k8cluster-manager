@@ -1,8 +1,6 @@
 package app
 
 import (
-	"fmt"
-	"io/ioutil"
 	kubernetes2 "k8s.io/client-go/kubernetes"
 	"log"
 	"net/http"
@@ -75,32 +73,11 @@ func (a *App) GetDeployments(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) CreateDemoDeployment(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	namespace := vars["namespace"]
-	handler.CreateDemoDeployment(namespace, a.Clientset, w, r)
+	handler.CreateDemoDeployment(a.Clientset, w, r)
 }
 
 func (a *App) CreateDeployment(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	namespace := vars["namespace"]
-
-	file, _, err := r.FormFile("uploadfile")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer file.Close()
-
-
-	body, err := ioutil.ReadAll(file)
-
-	if err != nil {
-		log.Printf("Error reading body: %v", err)
-		http.Error(w, "can't read body", http.StatusBadRequest)
-		return
-	}
-
-	handler.CreateDeploymentByYaml(namespace, body, a.Clientset, w, r)
+	handler.CreateDeploymentByYaml(a.Clientset, w, r)
 
 }
 
