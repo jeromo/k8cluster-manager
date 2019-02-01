@@ -77,8 +77,8 @@ func CreateDeploymentByYaml(clientset *kubernetes2.Clientset, w http.ResponseWri
 	}
 
 	output := k8manager.CreateDeploymentByYaml(namespace, body, clientset)
-	if strings.Compare(output,"Error") == 0 {
-		respondJSON(w, http.StatusInternalServerError, namespace)
+	if strings.HasPrefix(output,"Error") {
+		respondJSON(w, http.StatusConflict, output)
 	} else {
 		respondJSON(w, http.StatusAccepted, output)
 	}

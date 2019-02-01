@@ -49,7 +49,7 @@ func iGetAllTheDeploymentsOfTheNamespace() error {
 	return nil
 }
 func iCreateDemoDeployment() error {
-	response, err := http.PostForm("http://localhost:3000/deployments/default", url.Values{})
+	response, err := http.PostForm("http://localhost:3000/createdemodeployment/default", url.Values{})
 	if err != nil {
 		contents = ""
 
@@ -145,11 +145,16 @@ func iCreateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(resp.Status)
+/*		fmt.Println(resp.Status)
 		fmt.Println(string(resp_body))
 		if resp.StatusCode != http.StatusAccepted {
-			return http.ErrMissingFile
+			contents = "Error"
+			return http. .ErrMissingFile
 		}
+*/
+        contents = string(resp_body)
+println("En create deployment resp_body tiene ")
+        println(contents)
 		return nil
 
 	}
@@ -157,7 +162,15 @@ func iCreateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 }
 
 func iGetTheDeploymentCreated() error {
-	return godog.ErrPending
+	println("En iGetTheDeploymentCreated contents tiene ")
+	println(contents)
+	if strings.Contains(contents, "Error") {
+		println("Encontro error")
+
+		return fmt.Errorf(contents)
+	}
+
+	return nil
 }
 
 
@@ -176,95 +189,3 @@ func FeatureDeploymentsContext(s *godog.Suite) {
 }
 
 
-func postFile(filename string, targetUrl string) error {
-	bodyBuf := &bytes.Buffer{}
-	bodyWriter := multipart.NewWriter(bodyBuf)
-
-	// this step is very important
-	fileWriter, err := bodyWriter.CreateFormFile("uploadfile", filename)
-	if err != nil {
-		fmt.Println("error writing to buffer")
-		return err
-	}
-
-	// open file handle
-	fh, err := os.Open(filename)
-	if err != nil {
-		fmt.Println("error opening file")
-		return err
-	}
-	defer fh.Close()
-
-	//iocopy
-	_, err = io.Copy(fileWriter, fh)
-	if err != nil {
-		return err
-	}
-
-	contentType := bodyWriter.FormDataContentType()
-	bodyWriter.Close()
-
-	resp, err := http.Post(targetUrl, contentType, bodyBuf)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	resp_body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	fmt.Println(resp.Status)
-	fmt.Println(string(resp_body))
-	return nil
-}
-
-
-
-
-
-//Example Post
-/*
-func SendPostRequest (url string, filename string, filetype string) []byte {
-    file, err := os.Open(filename)
-
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer file.Close()
-
-
-    body := &bytes.Buffer{}
-    writer := multipart.NewWriter(body)
-    part, err := writer.CreateFormFile(filetype, filepath.Base(file.Name()))
-
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    io.Copy(part, file)
-    writer.Close()
-    request, err := http.NewRequest("POST", url, body)
-
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    request.Header.Add("Content-Type", writer.FormDataContentType())
-    client := &http.Client{}
-
-    response, err := client.Do(request)
-
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer response.Body.Close()
-
-    content, err := ioutil.ReadAll(response.Body)
-
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    return content
-}
-*/

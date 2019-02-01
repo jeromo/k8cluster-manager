@@ -106,11 +106,12 @@ func CreateDeploymentByYaml( namespace string, configFile []byte, clientset *kub
 	switch o := obj.(type) {
 	case *appsv1.Deployment:
 		result, err := deploymentsClient.Create(o)
-		return result.GetObjectMeta().GetName()
 		if err != nil {
 
-			return "Error"
+			return "Error: " + err.Error()
 		}
+
+		return result.GetObjectMeta().GetName()
 	default:
 		//o is unknown for us
 	}
