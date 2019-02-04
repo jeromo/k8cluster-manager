@@ -6,28 +6,29 @@ import (
 	kubernetes2 "k8s.io/client-go/kubernetes"
 )
 
-func GetNamespaces( clientset *kubernetes2.Clientset) []string{
+func GetNamespaces( clientset *kubernetes2.Clientset) ([]string, error){
+	var output []string
 	namespaces, err := clientset.CoreV1().Namespaces().List(metav1.ListOptions{})
 	if err != nil {
-		panic(err.Error())
+
+		return output, err
 	}
 	fmt.Printf("There are %d namespacess in the cluster\n", len(namespaces.Items))
 
-	var output []string
 	for i :=0; i < len(namespaces.Items); i++ {
 		output = append(output, namespaces.Items[i].ObjectMeta.Name +" ")
 	}
 
-
-	return output
+	return output, err
 }
 
-func GetNamespace( name string, clientset *kubernetes2.Clientset) string{
+func GetNamespace( name string, clientset *kubernetes2.Clientset) (string, error){
 	namespace, err := clientset.CoreV1().Namespaces().Get(name, metav1.GetOptions{})
 	if err != nil {
-		return "Error: " + err.Error()
+
+		return "", err
 	}
 
-	return 	namespace.ObjectMeta.Name
+	return 	namespace.ObjectMeta.Name, err
 }
 

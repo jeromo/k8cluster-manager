@@ -1,7 +1,6 @@
 package k8manager
 
 import (
-	"fmt"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -11,23 +10,22 @@ import (
 	"k8s.io/client-go/util/retry"
 )
 
-func GetDeployments( namespace string, clientset *kubernetes2.Clientset) []string {
+func GetDeployments( namespace string, clientset *kubernetes2.Clientset) ([]string, error) {
 	deploymentsClient := clientset.AppsV1().Deployments(namespace)
-	fmt.Printf("Listing deployments in namespace %q:\n", namespace)
+	var output []string
 	list, err := deploymentsClient.List(metav1.ListOptions{})
 	if err != nil {
-		return nil
+		return output, err
 	}
-	var output []string
 	for _, d := range list.Items {
-		output = append(output,d.Name)
+		output = append(output,d.Name + " ")
 	}
 
-	return output
+	return output, err
 }
 
 
-func CreateDemoDeployment( namespace string, clientset *kubernetes2.Clientset) string {
+func CreateDemoDeployment( namespace string, clientset *kubernetes2.Clientset) (string, error) {
 	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 
 	deployment := &appsv1.Deployment{
@@ -69,15 +67,17 @@ func CreateDemoDeployment( namespace string, clientset *kubernetes2.Clientset) s
 	// Create Deployment
 	result, err := deploymentsClient.Create(deployment)
 	if err != nil {
-		return "Error"
+
+		return "", err
 
 	}
-	return result.GetObjectMeta().GetName()
+
+	return result.GetObjectMeta().GetName(), err
 }
 
 func int32Ptr(i int32) *int32 { return &i }
 
-func DeleteDemoDeployment( namespace string, clientset *kubernetes2.Clientset) string {
+func DeleteDemoDeployment( namespace string, clientset *kubernetes2.Clientset) (string, error) {
 	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 	deletePolicy := metav1.DeletePropagationForeground
 	err := deploymentsClient.Delete("demo-deployment", &metav1.DeleteOptions{PropagationPolicy: &deletePolicy,})
@@ -86,20 +86,21 @@ func DeleteDemoDeployment( namespace string, clientset *kubernetes2.Clientset) s
 	}
 	if errors.IsNotFound(err) {
 
-		return "NotFound"
+		return "NotFound", err
 	}
 
-	return "Deleted"
+	return "Deleted", err
 }
 
-func CreateDeploymentByYaml( namespace string, configFile []byte, clientset *kubernetes2.Clientset) string {
+func CreateDeploymentByYaml( namespace string, configFile []byte, clientset *kubernetes2.Clientset) (string, error) {
 	//var deployment appsv1.Deployment
 
 	decode := scheme.Codecs.UniversalDeserializer().Decode
 	obj, _, err := decode([]byte(configFile), nil, nil)
 
 	if err != nil {
-		return "Error"
+
+		return "", err
 	}
 
 	// Create Deployment
@@ -109,24 +110,27 @@ func CreateDeploymentByYaml( namespace string, configFile []byte, clientset *kub
 		result, err := deploymentsClient.Create(o)
 		if err != nil {
 
-			return "Error: " + err.Error()
+			return "", err
 		}
 
-		return result.GetObjectMeta().GetName()
+		return result.GetObjectMeta().GetName(), err
 	default:
 		//o is unknown for us
+		err = errors.NewBadRequest("Object type described in yaml not found")
+
+		return "", err
 	}
-	return "Error"
 }
 
-func UpdateDeploymentByYaml( namespace string, configFile []byte, clientset *kubernetes2.Clientset) string {
+func UpdateDeploymentByYaml( namespace string, configFile []byte, clientset *kubernetes2.Clientset) (string, error) {
 	//var deployment appsv1.Deployment
 
 	decode := scheme.Codecs.UniversalDeserializer().Decode
 	obj, _, err := decode([]byte(configFile), nil, nil)
 
 	if err != nil {
-		return "Error"
+
+		return "", err
 	}
 
 	// Update Deployment
@@ -141,16 +145,18 @@ func UpdateDeploymentByYaml( namespace string, configFile []byte, clientset *kub
 			return updateErr
 		})
 		if retryErr != nil {
-			return "Error: " + retryErr.Error()
+			return "", retryErr
 		}
-		return o.GetObjectMeta().GetName()
+		return o.GetObjectMeta().GetName(), err
 		default:
 		//o is unknown for us
+			err = errors.NewBadRequest("Object type described in yaml not found")
+
+			return "", err
 	}
-	return "Error"
 }
 
-func DeleteDeployment( deployment string, clientset *kubernetes2.Clientset) string {
+func DeleteDeployment( deployment string, clientset *kubernetes2.Clientset) (string, error) {
 	deletePolicy := metav1.DeletePropagationForeground
 
 	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
@@ -158,8 +164,8 @@ func DeleteDeployment( deployment string, clientset *kubernetes2.Clientset) stri
 		PropagationPolicy: &deletePolicy,
 	}); err != nil {
 
-		return "Error: " + err.Error()
+		return "", err
 	}
 
-	return deployment
+	return deployment, nil
 }

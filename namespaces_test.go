@@ -2,6 +2,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/DATA-DOG/godog"
 	"github.com/DATA-DOG/godog/gherkin"
@@ -34,6 +35,7 @@ func theWsServerIsHealthyRunning() error {
 }
 
 func iAskForNamespaces() error {
+	contents = ""
 	response, err := http.Get("http://localhost:3000/namespaces")
 	if err != nil {
 		return err
@@ -46,9 +48,14 @@ func iAskForNamespaces() error {
 	}
 	contents = string(response_contents)
 
-	return err
+	if (response.StatusCode == http.StatusOK) {
+
+		return nil
+	}
+	return errors.New("http status :" + response.Status)
 }
 
+//JRM >Voy por aquí
 func iGetAllTheNamespacesOfTheMinikubeCluster() error {
 
 	if (len(contents) > 0) {

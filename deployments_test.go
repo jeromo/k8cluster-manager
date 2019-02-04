@@ -27,7 +27,7 @@ func iAskForDeploymentsInNamespace(arg1 *gherkin.DataTable) error {
 			return err
 		}
 		defer response.Body.Close()
-		if response.StatusCode != 200 {
+		if response.StatusCode != http.StatusOK {
 			contents = "Error: " + response.Status
 			return nil
 		}
