@@ -15,7 +15,7 @@ func GetNamespaces( clientset *kubernetes2.Clientset) []string{
 
 	var output []string
 	for i :=0; i < len(namespaces.Items); i++ {
-		output = append(output, namespaces.Items[i].ObjectMeta.Name)
+		output = append(output, namespaces.Items[i].ObjectMeta.Name +" ")
 	}
 
 
@@ -25,7 +25,7 @@ func GetNamespaces( clientset *kubernetes2.Clientset) []string{
 func GetNamespace( name string, clientset *kubernetes2.Clientset) string{
 	namespace, err := clientset.CoreV1().Namespaces().Get(name, metav1.GetOptions{})
 	if err != nil {
-		return "Not found"
+		return "Error: " + err.Error()
 	}
 
 	return 	namespace.ObjectMeta.Name

@@ -52,6 +52,7 @@ func iAskForNamespaces() error {
 func iGetAllTheNamespacesOfTheMinikubeCluster() error {
 
 	if (len(contents) > 0) {
+		println("Found "+ contents)
 		return nil
 	}
 

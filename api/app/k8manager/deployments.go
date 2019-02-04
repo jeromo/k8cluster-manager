@@ -149,3 +149,17 @@ func UpdateDeploymentByYaml( namespace string, configFile []byte, clientset *kub
 	}
 	return "Error"
 }
+
+func DeleteDeployment( deployment string, clientset *kubernetes2.Clientset) string {
+	deletePolicy := metav1.DeletePropagationForeground
+
+	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+	if err := deploymentsClient.Delete(deployment, &metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	}); err != nil {
+
+		return "Error: " + err.Error()
+	}
+
+	return deployment
+}

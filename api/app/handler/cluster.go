@@ -121,3 +121,15 @@ func DeleteDemoDeployment(namespace string, clientset *kubernetes2.Clientset, w 
 	}
 }
 
+
+func DeleteDeployment(namespace string, clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	deployment := vars["deployment"]
+
+	output := k8manager.DeleteDeployment(deployment, clientset)
+	if strings.Compare(output,"NotFound") == 0 {
+		respondJSON(w, http.StatusNotFound, namespace)
+	} else {
+		respondJSON(w, http.StatusAccepted, output)
+	}
+}

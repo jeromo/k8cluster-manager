@@ -33,7 +33,8 @@ func (a *App) setRouters() {
 	a.Post("/createdemodeployment/{namespace}", a.CreateDemoDeployment)
 	a.Post("/deployments/{namespace}", a.CreateDeployment)
 	a.Put("/deployments/{namespace}", a.GetDeployments)
-	a.Delete("/deployments/{namespace}", a.DeleteDemoDeployment)
+	a.Delete("/deployments/{namespace}", a.DeleteDeployment)
+	a.Delete("/deletedemodeployments/{namespace}", a.DeleteDemoDeployment)
 }
  
 // Wrap the router for GET method
@@ -86,10 +87,17 @@ func (a *App) UpdateeDeployment(w http.ResponseWriter, r *http.Request) {
 	handler.UpdateDeploymentByYaml(a.Clientset, w, r)
 
 }
+
 func (a *App) DeleteDemoDeployment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	namespace := vars["namespace"]
 	handler.DeleteDemoDeployment(namespace, a.Clientset, w, r)
+}
+
+func (a *App) DeleteDeployment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	namespace := vars["namespace"]
+	handler.DeleteDeployment(namespace, a.Clientset, w, r)
 }
 // Wrap the router for DELETE method
 func (a *App) Delete(path string, f func(w http.ResponseWriter, r *http.Request)) {
