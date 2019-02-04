@@ -84,6 +84,34 @@ func CreateDeploymentByYaml(clientset *kubernetes2.Clientset, w http.ResponseWri
 	}
 }
 
+func UpdateDeploymentByYaml(clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	namespace := vars["namespace"]
+
+	file, _, err := r.FormFile("uploadfile")
+	if err != nil {
+		respondJSON(w, http.StatusNotAcceptable, namespace)
+
+		return
+	}
+	defer file.Close()
+
+	body, err := ioutil.ReadAll(file)
+
+	if err != nil {
+		respondJSON(w, http.StatusBadRequest, namespace)
+
+		return
+	}
+
+	output := k8manager.UpdateDeploymentByYaml(namespace, body, clientset)
+	if strings.HasPrefix(output,"Error") {
+		respondJSON(w, http.StatusConflict, output)
+	} else {
+		respondJSON(w, http.StatusAccepted, output)
+	}
+}
+
 func DeleteDemoDeployment(namespace string, clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
 	output := k8manager.DeleteDemoDeployment(namespace, clientset)
 	if strings.Compare(output,"NotFound") == 0 {

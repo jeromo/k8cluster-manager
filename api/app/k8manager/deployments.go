@@ -8,6 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetes2 "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/util/retry"
 )
 
 func GetDeployments( namespace string, clientset *kubernetes2.Clientset) []string {
@@ -113,6 +114,37 @@ func CreateDeploymentByYaml( namespace string, configFile []byte, clientset *kub
 
 		return result.GetObjectMeta().GetName()
 	default:
+		//o is unknown for us
+	}
+	return "Error"
+}
+
+func UpdateDeploymentByYaml( namespace string, configFile []byte, clientset *kubernetes2.Clientset) string {
+	//var deployment appsv1.Deployment
+
+	decode := scheme.Codecs.UniversalDeserializer().Decode
+	obj, _, err := decode([]byte(configFile), nil, nil)
+
+	if err != nil {
+		return "Error"
+	}
+
+	// Update Deployment
+	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+	switch o := obj.(type) {
+	case *appsv1.Deployment:
+		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+			// Retrieve the latest version of Deployment before attempting update
+			// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
+			_, updateErr := deploymentsClient.Update(o)
+
+			return updateErr
+		})
+		if retryErr != nil {
+			return "Error: " + retryErr.Error()
+		}
+		return o.GetObjectMeta().GetName()
+		default:
 		//o is unknown for us
 	}
 	return "Error"

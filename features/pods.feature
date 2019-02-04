@@ -6,8 +6,8 @@ Feature: Pods
   Scenario: Get Pods
     Given the ws server is healthy running
     When I ask for pods in <namespace>
-      | namespace  |
+      | kube-public  |
       | default    |
-      | kubesystem |
+      | kube-system |
       | pepito     |
-    Then I get all the pods of the namespace
+    Then I get all the pods

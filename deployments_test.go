@@ -7,6 +7,7 @@ import (
 	"github.com/DATA-DOG/godog/gherkin"
 	"io"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -27,8 +28,7 @@ func iAskForDeploymentsInNamespace(arg1 *gherkin.DataTable) error {
 		}
 		defer response.Body.Close()
 		if response.StatusCode != 200 {
-			contents = ""
-
+			contents = "Error: " + response.Status
 			return nil
 		}
 		response_contents, err := ioutil.ReadAll(response.Body)
@@ -43,8 +43,8 @@ func iAskForDeploymentsInNamespace(arg1 *gherkin.DataTable) error {
 }
 
 func iGetAllTheDeploymentsOfTheNamespace() error {
-	if (len(contents) == 0) {
-		println("Warning:namespace not found or namespace without deployments")
+	if strings.Contains(contents, "Error:")  {
+		println("Warning:namespace not found or namespace without deployments"+ contents)
 	}
 	return nil
 }
@@ -115,14 +115,16 @@ func iCreateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 		// this step is very important
 		fileWriter, err := bodyWriter.CreateFormFile("uploadfile", "test/files/" + arg1.Rows[i].Cells[0].Value)
 		if err != nil {
-			fmt.Println("error writing to buffer")
+			contents = string("Error: writing to buffer")
+
 			return err
 		}
 
 		// open file handle
-		fh, err := os.Open("test/files/" + arg1.Rows[i].Cells[0].Value)
+		fh, err := os.Open("test/files/create/" + arg1.Rows[i].Cells[0].Value)
 		if err != nil {
-			fmt.Println("error opening file")
+			contents = string("Error: opening file")
+
 			return err
 		}
 		defer fh.Close()
@@ -130,6 +132,8 @@ func iCreateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 		//iocopy
 		_, err = io.Copy(fileWriter, fh)
 		if err != nil {
+
+			contents = string("Error: copying data file")
 			return err
 		}
 
@@ -138,23 +142,18 @@ func iCreateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 
 		resp, err := http.Post("http://localhost:3000/deployments/default", contentType, bodyBuf)
 		if err != nil {
+
+			contents = string("Error: Post call")
 			return err
 		}
 		defer resp.Body.Close()
 		resp_body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
+
 			return err
 		}
-/*		fmt.Println(resp.Status)
-		fmt.Println(string(resp_body))
-		if resp.StatusCode != http.StatusAccepted {
-			contents = "Error"
-			return http. .ErrMissingFile
-		}
-*/
         contents = string(resp_body)
-println("En create deployment resp_body tiene ")
-        println(contents)
+
 		return nil
 
 	}
@@ -162,10 +161,7 @@ println("En create deployment resp_body tiene ")
 }
 
 func iGetTheDeploymentCreated() error {
-	println("En iGetTheDeploymentCreated contents tiene ")
-	println(contents)
 	if strings.Contains(contents, "Error") {
-		println("Encontro error")
 
 		return fmt.Errorf(contents)
 	}
@@ -174,6 +170,93 @@ func iGetTheDeploymentCreated() error {
 }
 
 
+func putRequest(url string, data io.Reader)  (*http.Request, error){
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodPut, url, data)
+	if err != nil {
+		// handle error
+		contents = string("Error: NewRequest")
+		log.Fatal(err)
+	}
+	_, err = client.Do(req)
+	if err != nil {
+		// handle error
+		log.Fatal(err)
+	}
+
+	return req,err
+
+}
+
+func iUpdateDeploymentByDescription(arg1 *gherkin.DataTable) error {
+	for i := 0; i <  len(arg1.Rows); i++ {
+		// arg1.Rows[i].Cells[0].Value is the nname oj the file with deploynmnt description
+		bodyBuf := &bytes.Buffer{}
+		bodyWriter := multipart.NewWriter(bodyBuf)
+
+		// this step is very important
+		fileWriter, err := bodyWriter.CreateFormFile("uploadfile", "test/files/update" + arg1.Rows[i].Cells[0].Value)
+		if err != nil {
+			fmt.Println("error writing to buffer")
+			contents = string("Error: writing to buffer")
+
+			return err
+		}
+
+		// open file handle
+		fh, err := os.Open("test/files/update/" + arg1.Rows[i].Cells[0].Value)
+		if err != nil {
+			fmt.Println("error opening file")
+			contents = string("Error: opening file")
+
+			return err
+		}
+		defer fh.Close()
+
+		//iocopy
+		_, err = io.Copy(fileWriter, fh)
+		if err != nil {
+
+			fmt.Println("error copying data file")
+			contents = string("Error: copying data file")
+			return err
+		}
+
+//		contentType := bodyWriter.FormDataContentType()
+		bodyWriter.Close()
+
+		req, err := putRequest("http://localhost:3000/deployments/default", bodyBuf)
+		if err != nil {
+
+			contents = string("Error: putRequest")
+			return err
+		}
+
+
+		defer req.Body.Close()
+		req_body, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+
+			fmt.Println("error reading Body")
+			contents = string("Error: reading Body")
+			return err
+		}
+		contents = string(req_body)
+
+		return nil
+
+	}
+	return nil
+}
+
+func iDeleteDeploymentByName(arg1 *gherkin.DataTable) error {
+	return godog.ErrPending
+}
+
+func iGetTheDeploymentDeleted() error {
+	return godog.ErrPending
+
+}
 func FeatureDeploymentsContext(s *godog.Suite) {
 	s.Step(`^I ask for deployments in <namespace>$`, iAskForDeploymentsInNamespace)
 	s.Step(`^I get all the deployments of the namespace$`, iGetAllTheDeploymentsOfTheNamespace)
@@ -186,6 +269,11 @@ func FeatureDeploymentsContext(s *godog.Suite) {
 
 	s.Step(`^I create deployment by <description>$`, iCreateDeploymentByDescription)
 	s.Step(`^I get the deployment created$`, iGetTheDeploymentCreated)
+
+	s.Step(`^I update deployment by <description>$`, iUpdateDeploymentByDescription)
+
+	s.Step(`^I delete deployment by <name>$`, iDeleteDeploymentByName)
+	s.Step(`^I get the deployment deleted$`, iGetTheDeploymentDeleted)
 }
 
 

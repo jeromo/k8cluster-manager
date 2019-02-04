@@ -14,38 +14,40 @@ func iAskForPodsInNamespace(arg1 *gherkin.DataTable) error {
 	var response *http.Response
 	var err error
 
+    contents = ""
+	contents = ""
 	for i := 0; i <  len(arg1.Rows); i++ {
 		response, err = http.Get("http://localhost:3000/pods/"+ arg1.Rows[i].Cells[0].Value)
 		if err != nil {
 			contents = ""
+			response.Body.Close()
 
 			return err
 		}
-		defer response.Body.Close()
 		if response.StatusCode != 200 {
-			contents = ""
-
-			return nil
+			println("Warning: "+ response.Status + " " + arg1.Rows[i].Cells[0].Value)
+		} else {
+			response_contents, err := ioutil.ReadAll(response.Body)
+			if err != nil {
+				fmt.Printf("%s", err)
+				response.Body.Close()
+				os.Exit(1)
+			}
+			contents += string(response_contents) + " "
+			response.Body.Close()
 		}
-		response_contents, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			fmt.Printf("%s", err)
-			os.Exit(1)
-		}
-		contents = string(response_contents)
 
 	}
 	return nil
+
 }
 
-func iGetAllThePodsOfTheNamespace() error {
-	if (len(contents) == 0) {
-		println("Warning:namespace not found or namespace without pods")
-	}
+func iGetAllThePods() error {
+		println("Pods: " + contents)
 	return nil
 }
 
 func FeaturePodsContext(s *godog.Suite) {
 	s.Step(`^I ask for pods in <namespace>$`, iAskForPodsInNamespace)
-	s.Step(`^I get all the pods of the namespace$`, iGetAllThePodsOfTheNamespace)
+	s.Step(`^I get all the pods$`, iGetAllThePods)
 }

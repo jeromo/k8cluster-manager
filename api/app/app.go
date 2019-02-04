@@ -32,6 +32,7 @@ func (a *App) setRouters() {
 	a.Get("/deployments/{namespace}", a.GetDeployments)
 	a.Post("/createdemodeployment/{namespace}", a.CreateDemoDeployment)
 	a.Post("/deployments/{namespace}", a.CreateDeployment)
+	a.Put("/deployments/{namespace}", a.GetDeployments)
 	a.Delete("/deployments/{namespace}", a.DeleteDemoDeployment)
 }
  
@@ -81,6 +82,10 @@ func (a *App) CreateDeployment(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (a *App) UpdateeDeployment(w http.ResponseWriter, r *http.Request) {
+	handler.UpdateDeploymentByYaml(a.Clientset, w, r)
+
+}
 func (a *App) DeleteDemoDeployment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	namespace := vars["namespace"]

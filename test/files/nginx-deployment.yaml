@@ -1,29 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis-master
+  name: nginx-deployment
   labels:
-      app: redis
+    app: nginx
 spec:
+  replicas: 3
   selector:
     matchLabels:
-      app: redis
-      role: master
-      tier: backend
-  replicas: 3
+      app: nginx
   template:
     metadata:
       labels:
-        app: redis
-        role: master
-        tier: backend
+        app: nginx
     spec:
       containers:
-        - name: master
-          image: k8s.gcr.io/redis:e2e  # or just image: redis
-          resources:
-            requests:
-              cpu: 100m
-              memory: 100Mi
+        - name: nginx
+          image: nginx:1.7.9
           ports:
-            - containerPort: 6379
+            - containerPort: 80

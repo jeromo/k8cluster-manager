@@ -11,13 +11,12 @@ Feature: Namespaces
   Scenario: Get Namespace
     Given the ws server is healthy running
     When I ask for namespace  "default"
-    Then there should return it's name
+    Then it should return it's name
 
 
   Scenario: Get Some Namespaces
     Given the ws server is healthy running
-    When I ask for some namespace  <name>
-    | name     |
+    When I ask for namespace  <name>
     | default  |
     | devFAAS  |
-    Then there should return it's name
+    Then it should return it's name
