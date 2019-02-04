@@ -1,4 +1,5 @@
 Kubernetes Cluster management: dashboard and typical CRUD management
-The object of this project is getting used to client-go library
-The ws will be written in go with client-go
-the frontend will be written in Node.js
+The object of this project is use BDD practices creating a ws server that offers CRUD operations in a kubernetes cluster
+Prerequisites: a working kubernetes cluster defined in your ${HOME}/.kube
+Go lang installed
+godog installed (go BDD) 
