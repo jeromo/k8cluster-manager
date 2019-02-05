@@ -18,17 +18,19 @@ import (
 func iAskForDeploymentsInNamespace(arg1 *gherkin.DataTable) error {
 	var response *http.Response
 	var err error
+	contents = ""
 
 	for i := 0; i <  len(arg1.Rows); i++ {
 		response, err = http.Get("http://localhost:3000/deployments/"+ arg1.Rows[i].Cells[0].Value)
 		if err != nil {
-			contents = ""
+			println("Error asking for deployments "+ err.Error())
 
 			return err
 		}
 		defer response.Body.Close()
 		if response.StatusCode != http.StatusOK {
 			contents = "Error: " + response.Status
+
 			return nil
 		}
 		response_contents, err := ioutil.ReadAll(response.Body)
@@ -49,9 +51,9 @@ func iGetAllTheDeploymentsOfTheNamespace() error {
 	return nil
 }
 func iCreateDemoDeployment() error {
+	contents = ""
 	response, err := http.PostForm("http://localhost:3000/createdemodeployment/default", url.Values{})
 	if err != nil {
-		contents = ""
 
 		return nil
 	}
@@ -64,7 +66,7 @@ func iCreateDemoDeployment() error {
 	}
 
 	if (response.StatusCode != http.StatusCreated) {
-		contents = "Error"
+		contents = "Error:" + err.Error()
 	}
 
 	return err
@@ -72,13 +74,14 @@ func iCreateDemoDeployment() error {
 
 func iGetItCreated() error {
 	if strings.Compare(contents, "Error") == 0 {
-		println("Warning! demo deployment already exists")
+		println("Warning! " + contents)
 	}
 
 	return nil
 }
 
 func iDeleteDemoDeployment() error {
+	contents = ""
 	req, err := http.NewRequest("DELETE", "http://localhost:3000/deployments/default", nil)
 	if err != nil {
 		fmt.Printf("%s", err)
@@ -92,7 +95,7 @@ func iDeleteDemoDeployment() error {
 	}
 
 	if response.StatusCode != http.StatusAccepted {
-		contents = "Error"
+		contents = "Error: " +err.Error()
 	}
 
 	return nil
@@ -100,13 +103,14 @@ func iDeleteDemoDeployment() error {
 
 func iGetItDeletedIfExists() error {
 	if strings.Compare(contents, "Error") == 0 {
-		println("Warning! demo deployment not found")
+		println("Warning! "+ contents)
 	}
 
 	return nil
 }
 
 func iCreateDeploymentByDescription(arg1 *gherkin.DataTable) error {
+	contents = ""
 	for i := 0; i <  len(arg1.Rows); i++ {
 		// arg1.Rows[i].Cells[0].Value is the nname oj the file with deploynmnt description
 		bodyBuf := &bytes.Buffer{}
@@ -123,7 +127,7 @@ func iCreateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 		// open file handle
 		fh, err := os.Open("test/files/create/" + arg1.Rows[i].Cells[0].Value)
 		if err != nil {
-			contents = string("Error: opening file")
+			contents = string("Error: opening file " + err.Error())
 
 			return err
 		}
@@ -133,7 +137,7 @@ func iCreateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 		_, err = io.Copy(fileWriter, fh)
 		if err != nil {
 
-			contents = string("Error: copying data file")
+			contents = string("Error: copying data file "+ err.Error())
 			return err
 		}
 
@@ -142,13 +146,14 @@ func iCreateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 
 		resp, err := http.Post("http://localhost:3000/deployments/default", contentType, bodyBuf)
 		if err != nil {
+			contents = string("Error: Post call " + err.Error())
 
-			contents = string("Error: Post call")
 			return err
 		}
 		defer resp.Body.Close()
 		resp_body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
+			contents = string("Error: ReadALl  " + err.Error())
 
 			return err
 		}
@@ -162,6 +167,7 @@ func iCreateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 
 func iGetTheDeploymentCreated() error {
 	if strings.Contains(contents, "Error") {
+		println (contents)
 
 		return fmt.Errorf(contents)
 	}
@@ -175,12 +181,13 @@ func putRequest(url string, data io.Reader)  (*http.Request, error){
 	req, err := http.NewRequest(http.MethodPut, url, data)
 	if err != nil {
 		// handle error
-		contents = string("Error: NewRequest")
+		contents = string("Error: NewRequest " + err.Error())
 		log.Fatal(err)
 	}
 	_, err = client.Do(req)
 	if err != nil {
 		// handle error
+		contents = "Error: " + err.Error()
 		log.Fatal(err)
 	}
 
@@ -189,6 +196,7 @@ func putRequest(url string, data io.Reader)  (*http.Request, error){
 }
 
 func iUpdateDeploymentByDescription(arg1 *gherkin.DataTable) error {
+	contents = ""
 	for i := 0; i <  len(arg1.Rows); i++ {
 		// arg1.Rows[i].Cells[0].Value is the nname oj the file with deploynmnt description
 		bodyBuf := &bytes.Buffer{}
@@ -198,7 +206,7 @@ func iUpdateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 		fileWriter, err := bodyWriter.CreateFormFile("uploadfile", "test/files/update" + arg1.Rows[i].Cells[0].Value)
 		if err != nil {
 			fmt.Println("error writing to buffer")
-			contents = string("Error: writing to buffer")
+			contents = string("Error: writing to buffer " + err.Error())
 
 			return err
 		}
@@ -206,8 +214,8 @@ func iUpdateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 		// open file handle
 		fh, err := os.Open("test/files/update/" + arg1.Rows[i].Cells[0].Value)
 		if err != nil {
-			fmt.Println("error opening file")
-			contents = string("Error: opening file")
+			fmt.Println("error opening file " + err.Error())
+			contents = string("Error: opening file "+ err.Error())
 
 			return err
 		}
@@ -218,7 +226,8 @@ func iUpdateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 		if err != nil {
 
 			fmt.Println("error copying data file")
-			contents = string("Error: copying data file")
+			contents = string("Error: copying data file " + err.Error())
+
 			return err
 		}
 
@@ -227,8 +236,8 @@ func iUpdateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 
 		req, err := putRequest("http://localhost:3000/deployments/default", bodyBuf)
 		if err != nil {
+			contents = string("Error: putRequest " + err.Error())
 
-			contents = string("Error: putRequest")
 			return err
 		}
 
@@ -236,9 +245,9 @@ func iUpdateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 		defer req.Body.Close()
 		req_body, err := ioutil.ReadAll(req.Body)
 		if err != nil {
-
 			fmt.Println("error reading Body")
-			contents = string("Error: reading Body")
+			contents = string("Error: reading Body" + err.Error())
+
 			return err
 		}
 		contents = string(req_body)
