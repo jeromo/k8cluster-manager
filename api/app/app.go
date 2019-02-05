@@ -33,7 +33,7 @@ func (a *App) setRouters() {
 	a.Post("/createdemodeployment/{namespace}", a.CreateDemoDeployment)
 	a.Post("/deployments/{namespace}", a.CreateDeployment)
 	a.Put("/deployments/{namespace}", a.GetDeployments)
-	a.Delete("/deployments/{namespace}", a.DeleteDeployment)
+	a.Delete("/deployments/{namespace}/{deployment}", a.DeleteDeployment)
 	a.Delete("/deletedemodeployments/{namespace}", a.DeleteDemoDeployment)
 }
 
@@ -52,26 +52,30 @@ func (a *App) Put(path string, f func(w http.ResponseWriter, r *http.Request)) {
 	a.Router.HandleFunc(path, f).Methods("PUT")
 }
 
+// Wrap the router for DELETE method
+func (a *App) Delete(path string, f func(w http.ResponseWriter, r *http.Request)) {
+	a.Router.HandleFunc(path, f).Methods("DELETE")
+}
+
+// Run the app on it's router
+func (a *App) Run(host string) {
+	log.Fatal(http.ListenAndServe(host, a.Router))
+}
+
 func (a *App) GetNamespaces(w http.ResponseWriter, r *http.Request) {
 	handler.GetNamespaces(a.Clientset, w, r)
 }
 
 func (a *App) GetNamespace(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	name := vars["name"]
-	handler.GetNamespace(name, a.Clientset, w, r)
+	handler.GetNamespace(a.Clientset, w, r)
 }
 
 func (a *App) GetPods(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	namespace := vars["namespace"]
-	handler.GetPods(namespace, a.Clientset, w, r)
+	handler.GetPods(a.Clientset, w, r)
 }
 
 func (a *App) GetDeployments(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	namespace := vars["namespace"]
-	handler.GetDeployments(namespace, a.Clientset, w, r)
+	handler.GetDeployments(a.Clientset, w, r)
 }
 
 func (a *App) CreateDemoDeployment(w http.ResponseWriter, r *http.Request) {
@@ -89,23 +93,9 @@ func (a *App) UpdateeDeployment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) DeleteDemoDeployment(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	namespace := vars["namespace"]
-	handler.DeleteDemoDeployment(namespace, a.Clientset, w, r)
+	handler.DeleteDemoDeployment(a.Clientset, w, r)
 }
 
 func (a *App) DeleteDeployment(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	namespace := vars["namespace"]
-	handler.DeleteDeployment(namespace, a.Clientset, w, r)
-}
-
-// Wrap the router for DELETE method
-func (a *App) Delete(path string, f func(w http.ResponseWriter, r *http.Request)) {
-	a.Router.HandleFunc(path, f).Methods("DELETE")
-}
-
-// Run the app on it's router
-func (a *App) Run(host string) {
-	log.Fatal(http.ListenAndServe(host, a.Router))
+	handler.DeleteDeployment(a.Clientset, w, r)
 }

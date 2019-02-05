@@ -29,25 +29,34 @@ func iAskForDeploymentsInNamespace(arg1 *gherkin.DataTable) error {
 		}
 		defer response.Body.Close()
 		if response.StatusCode != http.StatusOK {
-			contents = "Error: " + response.Status
+			contents+= "Warning: " + response.Status + " " + arg1.Rows[i].Cells[0].Value + " "
 
-			return nil
+//			return nil //A HTTP status different than StatusOK is not considered an error by now
 		}
 		response_contents, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			fmt.Printf("%s", err)
+
 			os.Exit(1)
 		}
-		contents = string(response_contents)
+		if response.StatusCode == http.StatusOK {
+			if response_contents != nil {
+				contents += string(response_contents)
+			}
+		}
 
 	}
+
 	return nil
 }
 
 func iGetAllTheDeploymentsOfTheNamespace() error {
 	if strings.Contains(contents, "Error:") {
-		println("Warning:namespace not found or namespace without deployments" + contents)
+//		println("Warning:namespace not found or namespace without deployments" + contents)
+	} else {
+		println("Deployments " + contents)
 	}
+
 	return nil
 }
 func iCreateDemoDeployment() error {
@@ -55,13 +64,14 @@ func iCreateDemoDeployment() error {
 	response, err := http.PostForm("http://localhost:3000/createdemodeployment/default", url.Values{})
 	if err != nil {
 
-		return nil
+		return err
 	}
 
 	defer response.Body.Close()
 	_, ioerr := ioutil.ReadAll(response.Body)
 	if ioerr != nil {
 		fmt.Printf("%s", ioerr)
+
 		os.Exit(1)
 	}
 
@@ -85,12 +95,14 @@ func iDeleteDemoDeployment() error {
 	req, err := http.NewRequest("DELETE", "http://localhost:3000/deployments/default", nil)
 	if err != nil {
 		fmt.Printf("%s", err)
+
 		os.Exit(1)
 	}
 
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
 		fmt.Printf("%s", err)
+
 		os.Exit(1)
 	}
 
@@ -136,8 +148,8 @@ func iCreateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 		//iocopy
 		_, err = io.Copy(fileWriter, fh)
 		if err != nil {
-
 			contents = string("Error: copying data file " + err.Error())
+
 			return err
 		}
 
@@ -181,12 +193,14 @@ func putRequest(url string, data io.Reader) (*http.Request, error) {
 	if err != nil {
 		// handle error
 		contents = string("Error: NewRequest " + err.Error())
+
 		log.Fatal(err)
 	}
 	_, err = client.Do(req)
 	if err != nil {
 		// handle error
 		contents = "Error: " + err.Error()
+
 		log.Fatal(err)
 	}
 
@@ -257,13 +271,52 @@ func iUpdateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 }
 
 func iDeleteDeploymentByName(arg1 *gherkin.DataTable) error {
-	return godog.ErrPending
+	contents = ""
+	for i := 0; i < len(arg1.Rows); i++ {
+		// arg1.Rows[i].Cells[0].Value is the nname oj the file with deploynmnt description
+		req, err := http.NewRequest(
+			"DELETE", "http://localhost:3000/deployments/default/"+arg1.Rows[i].Cells[0].Value, nil)
+		if err != nil {
+			fmt.Printf("%s", err)
+
+			os.Exit(1)
+		}
+
+		response, err := http.DefaultClient.Do(req)
+		if err != nil {
+			fmt.Printf("%s", err)
+
+			os.Exit(1)
+		}
+
+		if response.StatusCode != http.StatusAccepted {
+			contents += "Error: " + arg1.Rows[i].Cells[0].Value + " " + err.Error() + " "
+		} else {
+			contents += arg1.Rows[i].Cells[0].Value + "deleted "
+		}
+	}
+
+	return nil
 }
 
 func iGetTheDeploymentDeleted() error {
-	return godog.ErrPending
+	if strings.Compare(contents, "Error") == 0 {
 
+		return  fmt.Errorf(contents)
+	}
+
+	return nil
 }
+
+func iGetTheDeploymentUpdated() error {
+	if strings.Compare(contents, "Error") == 0 {
+
+		return  fmt.Errorf(contents)
+	}
+
+	return nil
+}
+
 func FeatureDeploymentsContext(s *godog.Suite) {
 	s.Step(`^I ask for deployments in <namespace>$`, iAskForDeploymentsInNamespace)
 	s.Step(`^I get all the deployments of the namespace$`, iGetAllTheDeploymentsOfTheNamespace)
@@ -278,6 +331,7 @@ func FeatureDeploymentsContext(s *godog.Suite) {
 	s.Step(`^I get the deployment created$`, iGetTheDeploymentCreated)
 
 	s.Step(`^I update deployment by <description>$`, iUpdateDeploymentByDescription)
+	s.Step(`^I get the deployment updated$`, iGetTheDeploymentUpdated)
 
 	s.Step(`^I delete deployment by <name>$`, iDeleteDeploymentByName)
 	s.Step(`^I get the deployment deleted$`, iGetTheDeploymentDeleted)

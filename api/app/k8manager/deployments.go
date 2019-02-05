@@ -155,7 +155,7 @@ func UpdateDeploymentByYaml(namespace string, configFile []byte, clientset *kube
 	}
 }
 
-func DeleteDeployment(deployment string, clientset *kubernetes2.Clientset) (string, error) {
+func DeleteDeployment(namespace string, deployment string, clientset *kubernetes2.Clientset) (string, error) {
 	deletePolicy := metav1.DeletePropagationForeground
 
 	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)

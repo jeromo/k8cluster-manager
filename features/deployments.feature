@@ -6,33 +6,23 @@ Feature: Deployments
   Scenario: Get Deployments
     Given the ws server is healthy running
     When I ask for deployments in <namespace>
-      | namespace  |
       | default    |
-      | kubesystem |
+      | kube-system |
       | pepito     |
     Then I get all the deployments of the namespace
 
-#  Scenario: Create demo deployment
-#    Given the ws server is healthy running
-#    When I create  demo deployment
-#    Then I get it created
-
-#  Scenario: Delete demo deployment
-#    Given the ws server is healthy running
-#    When I delete  demo deployment
-#    Then I get it deleted if exists
 
   Scenario: Create deployment by file
     Given the ws server is healthy running
     When I create deployment by <description>
       | redis-master.yaml |
-    Then I get the deployment created
+    Then I get it deleted if exists
 
   Scenario: Update deployment by file
     Given the ws server is healthy running
     When I update deployment by <description>
       | redis-master.yaml |
-    Then I get the deployment created
+    Then I get the deployment updated
 
   Scenario: Delete deployment by name
     Given the ws server is healthy running
