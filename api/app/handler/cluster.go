@@ -8,12 +8,12 @@ import (
 	kubernetes2 "k8s.io/client-go/kubernetes"
 	"net/http"
 )
- 
+
 func GetNamespaces(clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
-	output, err:= k8manager.GetNamespaces(clientset)
+	output, err := k8manager.GetNamespaces(clientset)
 	if err == nil {
 		respondJSON(w, http.StatusOK, output)
-	}else {
+	} else {
 		respondJSON(w, http.StatusInternalServerError, output)
 	}
 }
@@ -22,11 +22,10 @@ func GetNamespace(name string, clientset *kubernetes2.Clientset, w http.Response
 	output, err := k8manager.GetNamespace(name, clientset)
 	if err == nil {
 		respondJSON(w, http.StatusOK, output)
-	}else {
+	} else {
 		respondJSON(w, http.StatusNotFound, output)
 	}
 }
-
 
 func GetPods(namespace string, clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
 	output, err := k8manager.GetPods(namespace, clientset)
@@ -37,7 +36,6 @@ func GetPods(namespace string, clientset *kubernetes2.Clientset, w http.Response
 	}
 }
 
-
 func GetDeployments(namespace string, clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
 	output, err := k8manager.GetDeployments(namespace, clientset)
 	if err != nil {
@@ -46,7 +44,6 @@ func GetDeployments(namespace string, clientset *kubernetes2.Clientset, w http.R
 		respondJSON(w, http.StatusOK, output)
 	}
 }
-
 
 func CreateDemoDeployment(clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -120,18 +117,17 @@ func UpdateDeploymentByYaml(clientset *kubernetes2.Clientset, w http.ResponseWri
 
 func DeleteDemoDeployment(namespace string, clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
 	output, err := k8manager.DeleteDemoDeployment(namespace, clientset)
-	if err == nil{
+	if err == nil {
 		respondJSON(w, http.StatusAccepted, output)
 	} else {
 		println(err.Error())
 		if errors.IsNotFound(err) {
 			respondJSON(w, http.StatusNotFound, output)
-		}else {
+		} else {
 			respondJSON(w, http.StatusInternalServerError, namespace)
 		}
 	}
 }
-
 
 func DeleteDeployment(namespace string, clientset *kubernetes2.Clientset, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

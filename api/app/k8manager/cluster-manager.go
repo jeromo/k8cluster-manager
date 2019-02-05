@@ -9,30 +9,29 @@ import (
 	"path/filepath"
 )
 
-func Initialize() *kubernetes2.Clientset{
+func Initialize() *kubernetes2.Clientset {
 	var kubeconfig *string
 	if home := homeDir(); home != "" {
-	kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {
-	kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
 
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
-	panic(err.Error())
+		panic(err.Error())
 	}
 
 	// create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-	panic(err.Error())
+		panic(err.Error())
 	}
 
 	return clientset
 }
-
 
 func homeDir() string {
 	if h := os.Getenv("HOME"); h != "" {
@@ -40,4 +39,3 @@ func homeDir() string {
 	}
 	return os.Getenv("USERPROFILE") // windows
 }
-

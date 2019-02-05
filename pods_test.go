@@ -15,8 +15,8 @@ func iAskForPodsInNamespace(arg1 *gherkin.DataTable) error {
 	var err error
 
 	contents = ""
-	for i := 0; i <  len(arg1.Rows); i++ {
-		response, err = http.Get("http://localhost:3000/pods/"+ arg1.Rows[i].Cells[0].Value)
+	for i := 0; i < len(arg1.Rows); i++ {
+		response, err = http.Get("http://localhost:3000/pods/" + arg1.Rows[i].Cells[0].Value)
 		if err != nil {
 			contents = ""
 			response.Body.Close()
@@ -24,7 +24,7 @@ func iAskForPodsInNamespace(arg1 *gherkin.DataTable) error {
 			return err
 		}
 		if response.StatusCode != http.StatusOK {
-			println("Warning: "+ response.Status + " " + arg1.Rows[i].Cells[0].Value)
+			println("Warning: " + response.Status + " " + arg1.Rows[i].Cells[0].Value)
 		} else {
 			response_contents, err := ioutil.ReadAll(response.Body)
 			if err != nil {
@@ -42,7 +42,7 @@ func iAskForPodsInNamespace(arg1 *gherkin.DataTable) error {
 }
 
 func iGetAllThePods() error {
-		println("Pods: " + contents)
+	println("Pods: " + contents)
 	return nil
 }
 

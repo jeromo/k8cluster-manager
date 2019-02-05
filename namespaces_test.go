@@ -19,15 +19,16 @@ var req http.Request
 type apiFeature struct {
 	resp *httptest.ResponseRecorder
 }
+
 var contents string
 
 func (a *apiFeature) resetResponse(interface{}) {
 	a.resp = httptest.NewRecorder()
 }
 func theWsServerIsHealthyRunning() error {
-	if serverLaunched == false{
+	if serverLaunched == false {
 		serverLaunched = true
-		go launchServer();
+		go launchServer()
 
 		time.Sleep(time.Second)
 	}
@@ -57,8 +58,8 @@ func iAskForNamespaces() error {
 
 func iGetAllTheNamespacesOfTheMinikubeCluster() error {
 
-	if (len(contents) > 0) {
-		println("Found "+ contents)
+	if len(contents) > 0 {
+		println("Found " + contents)
 
 		return nil
 	}
@@ -67,7 +68,7 @@ func iGetAllTheNamespacesOfTheMinikubeCluster() error {
 }
 
 func iAskForNamespace(arg1 string) error {
-	response, err := http.Get("http://localhost:3000/namespaces/"+ arg1)
+	response, err := http.Get("http://localhost:3000/namespaces/" + arg1)
 	if err != nil {
 		contents = "Error:" + arg1 + err.Error()
 
@@ -84,12 +85,11 @@ func iAskForNamespace(arg1 string) error {
 	return err
 }
 
-
 func itShouldReturnItsName() error {
-	println("Encontrados: "+ contents)
+	println("Encontrados: " + contents)
 
 	return nil
-//	return fmt.Errorf("namespace not found")
+	//	return fmt.Errorf("namespace not found")
 }
 
 func iAskForNamespaceName(arg1 *gherkin.DataTable) error {
@@ -97,8 +97,8 @@ func iAskForNamespaceName(arg1 *gherkin.DataTable) error {
 	var err error
 
 	contents = ""
- 	for i := 0; i <  len(arg1.Rows); i++ {
-		response, err = http.Get("http://localhost:3000/namespaces/"+ arg1.Rows[i].Cells[0].Value)
+	for i := 0; i < len(arg1.Rows); i++ {
+		response, err = http.Get("http://localhost:3000/namespaces/" + arg1.Rows[i].Cells[0].Value)
 		if err != nil {
 			contents = ""
 			response.Body.Close()
@@ -106,7 +106,7 @@ func iAskForNamespaceName(arg1 *gherkin.DataTable) error {
 			return err
 		}
 		if response.StatusCode != 200 {
-			println("Warning: "+ response.Status + " " + arg1.Rows[i].Cells[0].Value)
+			println("Warning: " + response.Status + " " + arg1.Rows[i].Cells[0].Value)
 		} else {
 			response_contents, err := ioutil.ReadAll(response.Body)
 			if err != nil {
@@ -122,7 +122,6 @@ func iAskForNamespaceName(arg1 *gherkin.DataTable) error {
 	return nil
 }
 
-
 func FeatureContext(s *godog.Suite) {
 	api := &apiFeature{}
 
@@ -137,5 +136,4 @@ func FeatureContext(s *godog.Suite) {
 	s.Step(`^I ask for namespaces$`, iAskForNamespaces)
 	s.Step(`^I get all the namespaces of the minikube cluster$`, iGetAllTheNamespacesOfTheMinikubeCluster)
 	s.Step(`^I ask for namespace  <name>$`, iAskForNamespaceName)
-	}
-
+}

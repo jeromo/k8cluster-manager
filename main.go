@@ -10,8 +10,8 @@ import (
 
 // SafeCounter is safe to use concurrently.
 type SafeState struct {
-	stop   bool
-	mux sync.Mutex
+	stop bool
+	mux  sync.Mutex
 }
 
 // Inc increments the counter for the given key.
@@ -33,7 +33,7 @@ func (c *SafeState) WantStop() bool {
 var State SafeState
 
 func main() {
-	launchServer();
+	launchServer()
 }
 
 func launchServer() {
@@ -118,4 +118,3 @@ func homeDir() string {
 	}
 	return os.Getenv("USERPROFILE") // windows
 }
-
