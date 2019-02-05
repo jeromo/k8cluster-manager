@@ -48,29 +48,29 @@ func iAskForNamespaces() error {
 	}
 	contents = string(response_contents)
 
-	if (response.StatusCode == http.StatusOK) {
+	if response.StatusCode == http.StatusOK {
 
 		return nil
 	}
 	return errors.New("http status :" + response.Status)
 }
 
-//JRM >Voy por aquí
 func iGetAllTheNamespacesOfTheMinikubeCluster() error {
 
 	if (len(contents) > 0) {
 		println("Found "+ contents)
+
 		return nil
 	}
 
 	return fmt.Errorf("expected json, does not match actual: %s", contents)
 }
 
-
 func iAskForNamespace(arg1 string) error {
 	response, err := http.Get("http://localhost:3000/namespaces/"+ arg1)
 	if err != nil {
-		contents = "Error:" + arg1 + " not found"
+		contents = "Error:" + arg1 + err.Error()
+
 		return err
 	}
 	defer response.Body.Close()
