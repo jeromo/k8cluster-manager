@@ -129,7 +129,7 @@ func iCreateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 		// this step is very important
 		fileWriter, err := bodyWriter.CreateFormFile("uploadfile", "test/files/"+arg1.Rows[i].Cells[0].Value)
 		if err != nil {
-			contents = string("Error: writing to buffer")
+			contents = string("Error: CreateFormFile")
 
 			return err
 		}
@@ -183,7 +183,7 @@ func iGetTheDeploymentCreated() error {
 	return nil
 }
 
-func putRequest(url string, data io.Reader) (*http.Request, error) {
+func putRequest(url string, contentType string, data io.Reader) (*http.Response, *http.Request, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(http.MethodPut, url, data)
 	if err != nil {
@@ -191,13 +191,14 @@ func putRequest(url string, data io.Reader) (*http.Request, error) {
 
 		log.Fatal(err)
 	}
-	_, err = client.Do(req)
+	req.Header.Set("Content-Type", contentType)
+	resp, err := client.Do(req)
 	if err != nil {
 
 		log.Fatal(err)
 	}
 
-	return req, err
+	return resp, req, err
 
 }
 
@@ -232,10 +233,11 @@ func iUpdateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 			return err
 		}
 
-		//		contentType := bodyWriter.FormDataContentType()
+		contentType := bodyWriter.FormDataContentType()
 		bodyWriter.Close()
 
-		req, err := putRequest("http://localhost:3000/deployments/default", bodyBuf)
+		resp, req, err := putRequest("http://localhost:3000/deployments/default", contentType, bodyBuf)
+
 		if err != nil {
 			contents = string("Error: putRequest " + err.Error())
 
@@ -250,6 +252,14 @@ func iUpdateDeploymentByDescription(arg1 *gherkin.DataTable) error {
 			return err
 		}
 		contents += string(req_body) + " "
+
+
+		if http.StatusOK != resp.StatusCode {
+			contents = "Error: "+ resp.Status
+
+			return fmt.Errorf("Error %s", resp.Status)
+		}
+
 	}
 
 	return nil
@@ -309,6 +319,53 @@ func iGetTheDeploymentUpdated() error {
 
 	return nil
 }
+func iCreateDeploymentByBadDescription(arg1 *gherkin.DataTable) error {
+	err := iCreateDeploymentByDescription(arg1)
+	if err == nil {
+
+		return fmt.Errorf("Should return an error")
+	}
+
+	if debug {
+		println(contents)
+	}
+
+	return nil
+}
+
+func iReceiveCreateError() error {
+	iGetTheDeploymentCreated()
+	if !strings.Contains(contents, "Error") {
+
+		return fmt.Errorf("Should return an error")
+	}
+
+	return nil
+}
+
+func iUpdateDeploymentByNonExistentDescription(arg1 *gherkin.DataTable) error {
+	err := iUpdateDeploymentByDescription(arg1)
+	if err == nil {
+
+		return fmt.Errorf("Should return an error")
+	}
+
+	if debug {
+		println(contents)
+	}
+
+	return nil
+}
+
+func iGetUpdateError() error {
+	if !strings.Contains(contents, "Error") {
+
+		return fmt.Errorf("Should return an error")
+	}
+
+	return nil
+}
+
 
 func FeatureDeploymentsContext(s *godog.Suite) {
 	s.Step(`^I ask for deployments in <namespace>$`, iAskForDeploymentsInNamespace)
@@ -328,4 +385,10 @@ func FeatureDeploymentsContext(s *godog.Suite) {
 
 	s.Step(`^I delete deployment by <name>$`, iDeleteDeploymentByName)
 	s.Step(`^I get the deployment deleted$`, iGetTheDeploymentDeleted)
+
+	s.Step(`^I create deployment by bad <description>$`, iCreateDeploymentByBadDescription)
+	s.Step(`^I receive create error$`, iReceiveCreateError)
+
+	s.Step(`^I update deployment by non existent <description>$`, iUpdateDeploymentByNonExistentDescription)
+	s.Step(`^I get update error$`, iGetUpdateError)
 }

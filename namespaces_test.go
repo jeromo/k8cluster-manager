@@ -18,7 +18,7 @@ type apiFeature struct {
 	resp *httptest.ResponseRecorder
 }
 
-// Contains the asnwer of the http requests
+// Contains the answer of the http requests
 var contents string
 
 func (a *apiFeature) resetResponse(interface{}) {
@@ -28,9 +28,9 @@ func theWsServerIsHealthyRunning() error {
 	if serverLaunched == false {
 		serverLaunched = true
 		go launchServer()
-
 		time.Sleep(time.Second)
 	}
+
 	return nil
 }
 

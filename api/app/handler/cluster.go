@@ -122,10 +122,9 @@ func UpdateDeploymentByYaml(clientset *kubernetes2.Clientset, w http.ResponseWri
 
 	output, err := k8manager.UpdateDeploymentByYaml(namespace, body, clientset)
 	if err != nil {
-		println("UpdateDeploymentByYaml returns :" + err.Error())
-		respondJSON(w, http.StatusConflict, output)
+		respondJSON(w, http.StatusConflict, err.Error())
 	} else {
-		respondJSON(w, http.StatusAccepted, output)
+		respondJSON(w, http.StatusOK, output)
 	}
 }
 
