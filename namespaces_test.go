@@ -1,4 +1,3 @@
-/* file: $GOPATH/src/godogs/godogs_test.go */
 package main
 
 import (
@@ -14,12 +13,12 @@ import (
 )
 
 var serverLaunched = false
-var req http.Request
-
+var debug = true
 type apiFeature struct {
 	resp *httptest.ResponseRecorder
 }
 
+// Contains the asnwer of the http requests
 var contents string
 
 func (a *apiFeature) resetResponse(interface{}) {
@@ -59,7 +58,9 @@ func iAskForNamespaces() error {
 func iGetAllTheNamespacesOfTheMinikubeCluster() error {
 
 	if len(contents) > 0 {
-		println("Found " + contents)
+		if debug {
+			println("Found " + contents)
+		}
 
 		return nil
 	}
@@ -78,6 +79,7 @@ func iAskForNamespace(arg1 string) error {
 	response_contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		fmt.Printf("%s", err)
+
 		os.Exit(1)
 	}
 	contents = string(response_contents)
@@ -86,7 +88,9 @@ func iAskForNamespace(arg1 string) error {
 }
 
 func itShouldReturnItsName() error {
-	println("Encontrados: " + contents)
+	if debug {
+		println("Encontrados: " + contents)
+	}
 
 	return nil
 	//	return fmt.Errorf("namespace not found")

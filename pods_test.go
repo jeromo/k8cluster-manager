@@ -30,6 +30,7 @@ func iAskForPodsInNamespace(arg1 *gherkin.DataTable) error {
 			if err != nil {
 				fmt.Printf("%s", err)
 				response.Body.Close()
+
 				os.Exit(1)
 			}
 			contents += string(response_contents) + " "
@@ -42,7 +43,10 @@ func iAskForPodsInNamespace(arg1 *gherkin.DataTable) error {
 }
 
 func iGetAllThePods() error {
-	println("Pods: " + contents)
+	if debug {
+		println("Pods: " + contents)
+	}
+
 	return nil
 }
 
