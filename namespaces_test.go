@@ -7,23 +7,16 @@ import (
 	"github.com/DATA-DOG/godog/gherkin"
 	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"time"
 )
 
 var serverLaunched = false
 var debug = true
-type apiFeature struct {
-	resp *httptest.ResponseRecorder
-}
 
 // Contains the answer of the http requests
 var contents string
 
-func (a *apiFeature) resetResponse(interface{}) {
-	a.resp = httptest.NewRecorder()
-}
 func theWsServerIsHealthyRunning() error {
 	if serverLaunched == false {
 		serverLaunched = true
@@ -127,9 +120,6 @@ func iAskForNamespaceName(arg1 *gherkin.DataTable) error {
 }
 
 func FeatureContext(s *godog.Suite) {
-	api := &apiFeature{}
-
-	s.BeforeScenario(api.resetResponse)
 
 	s.Step(`^the ws server is healthy running$`, theWsServerIsHealthyRunning)
 	s.Step(`^I ask for namespace  "([^"]*)"$`, iAskForNamespace)
